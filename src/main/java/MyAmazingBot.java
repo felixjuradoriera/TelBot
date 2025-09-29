@@ -21,7 +21,10 @@ import org.telegram.telegrambots.meta.generics.TelegramClient;
 public class MyAmazingBot implements LongPollingSingleThreadUpdateConsumer  {
 
 	
-	private TelegramClient telegramClient = new OkHttpTelegramClient("7380837153:AAHMQFIyGwO-FSwq9DvpQjnH4JroSy9tOSs");
+	private TelegramClient telegramClient = new OkHttpTelegramClient("7380837153:AAHMQFIyGwO-FSwq9DvpQjnH4JroSy9tOSs");  //PRO
+	//private TelegramClient telegramClient = new OkHttpTelegramClient("7029538813:AAH2I40DoMKEWLpVph3qrWUJ3vilGTEQABg"); //PRE
+	
+	
 	private static final String CSV_USERS = "C:"+ File.separator +"BOT" + File.separator +"CONF"+File.separator+ "users.csv";
 	private static final String CSV_EXCLUDE_ALERTS = "C:"+ File.separator +"BOT" + File.separator +"CONF"+File.separator+ "alertasExclusiones.csv";
 	 
