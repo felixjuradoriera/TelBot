@@ -7,6 +7,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 import org.telegram.telegrambots.client.okhttp.OkHttpTelegramClient;
@@ -27,32 +28,195 @@ public class MyAmazingBot implements LongPollingSingleThreadUpdateConsumer  {
 	
 	private static final String CSV_USERS = "C:"+ File.separator +"BOT" + File.separator +"CONF"+File.separator+ "users.csv";
 	private static final String CSV_EXCLUDE_ALERTS = "C:"+ File.separator +"BOT" + File.separator +"CONF"+File.separator+ "alertasExclusiones.csv";
+	
+	
 	 
+	private static HashMap<Long, ConfAlerta> confAlertas;
+	private static HashMap<Long, String> estados;
+	
+	public MyAmazingBot() throws IOException {
+	
+		confAlertas= new HashMap<>();
+		
+		confAlertas=ConfAlertasCSVUtils.loadFromCSV();
+		
+		estados= new HashMap<>();
+		
+		System.out.println("CARGA INICIAL COMPLETADA");
+		
+		
+	}
+
+
+	public class Estados {
+	    public static final String INICIAL = "INICIAL";
+	    public static final String CONFALERTA1 = "CONFALERTA1";
+	    public static final String CONFALERTA2 = "CONFALERTA2";
+	    
+	}
 	
 	@Override
     public void consume(Update update) {
         if (update.hasMessage() && update.getMessage().hasText()) {
             String text = update.getMessage().getText();
             Long chatId = update.getMessage().getChatId();
-            
+                        
 
-            if ("/activar_alertas".equals(text)) {
-            	
-            	User user=new User();
-            	user.setChatId(chatId);
-            	user.setName(update.getMessage().getChat().getUserName());
-            	
-            	saveUserIfNotExists(user);
-            	
-            	sendMessage(chatId, "Alertas 2UP activadas para el usuario");
-            } else if ("/desactivar_alertas".equals(text)) {
-            	
-            	deleteUserByChatId(chatId.toString());
-            	
-            	sendMessage(chatId, "Alertas 2UP desactivadas para el usuario");
-            	
+            String estadoUsuario=estados.get(chatId);
+            if(estadoUsuario==null) {
+            	estadoUsuario=Estados.INICIAL;
+            	estados.put(chatId, estadoUsuario);
             }
-        }
+            
+            
+			if (estadoUsuario.equals(Estados.INICIAL)) {
+				if ("/activar_alertas".equals(text)) {
+
+					User user = new User();
+					user.setChatId(chatId);
+					user.setName(update.getMessage().getChat().getUserName());
+
+					saveUserIfNotExists(user);
+
+					sendMessage(chatId, "Alertas 2UP activadas para el usuario");
+
+					estados.put(chatId, Estados.INICIAL);
+				} else if ("/desactivar_alertas".equals(text)) {
+
+					deleteUserByChatId(chatId.toString());
+
+					sendMessage(chatId, "Alertas 2UP desactivadas para el usuario");
+
+					estados.put(chatId, Estados.INICIAL);
+				} else if ("/conf_alertas".equals(text)) {
+
+					ConfAlerta conf=confAlertas.get(chatId);
+					if(conf==null) {
+						conf= new ConfAlerta();
+						conf.setChatId(chatId);
+						conf.setRatioNivel1(Double.valueOf(95));
+						conf.setRatioNivel2(Double.valueOf(92));
+						
+						confAlertas.put(chatId, conf);
+						
+					}
+					
+					StringBuilder mens= new StringBuilder();
+					mens.append("ratios configurados para el usuario \n");
+					mens.append("<b>Nivel 1</b> (cuotas hasta 5)-><b>" + conf.getRatioNivel1() + "% </b>\n");
+					mens.append("<b>Nivel 2</b> (cuotas a partir de 5)-><b>" + conf.getRatioNivel2() + "%</b>\n");
+					
+					String enviar=mens.toString();
+					
+					sendMessage(chatId, enviar);
+					
+					StringBuilder mens1= new StringBuilder();
+					mens1.append("Escribe nuevo ratio para el <b>nivel 1</b>\n");
+					mens1.append("escribe 0 para volver a valor defecto\n");
+					mens1.append("(decimales con punto y sin el signo de %)");
+					
+					
+					sendMessage(chatId, mens1.toString());
+
+					estados.put(chatId, Estados.CONFALERTA1);
+				} else {
+					estados.put(chatId, Estados.INICIAL);
+				}
+			} else if (estadoUsuario.equals(Estados.CONFALERTA1)) {
+				
+				try {
+					Double confRatio1=Double.valueOf(text);
+					if(confRatio1==0) {
+						confRatio1=95.00;
+					} else if(confRatio1<92) {
+						confRatio1=92.00;
+					}
+					ConfAlerta conf=confAlertas.get(chatId);
+					if(conf==null) {
+						conf= new ConfAlerta();
+						conf.setChatId(chatId);
+						conf.setRatioNivel1(confRatio1);
+						conf.setRatioNivel2(Double.valueOf(92));
+						
+						confAlertas.put(chatId, conf);
+						
+					} else {
+						conf.setRatioNivel1(confRatio1);
+						confAlertas.put(chatId, conf);
+					}
+					
+					StringBuilder mens1= new StringBuilder();
+					mens1.append("Nivel 1 seteado a -> <b> "+ conf.getRatioNivel1() +"%</b>\n\n");
+					mens1.append("Escribe nuevo ratio para el <b>nivel 2</b>\n");
+					mens1.append("escribe 0 para volver a valor defecto\n");
+					mens1.append("(decimales con punto y sin el signo de %)");
+					
+					sendMessage(chatId, mens1.toString());
+					
+					estados.put(chatId, Estados.CONFALERTA2);
+					
+					ConfAlertasCSVUtils.escribirConfAlertasEnCsv(confAlertas);
+					
+				} catch (Exception e) {
+					sendMessage(chatId,"formato de ratio incorrecto");
+					estados.put(chatId, Estados.INICIAL);
+				}
+				
+				
+			} else if (estadoUsuario.equals(Estados.CONFALERTA2)) {
+				
+				try {
+					Double confRatio2=Double.valueOf(text);
+					
+					if(confRatio2==0) {
+						confRatio2=92.00;
+					} else if(confRatio2<92) {
+						confRatio2=92.00;
+					}
+					ConfAlerta conf=confAlertas.get(chatId);
+					if(conf==null) {
+						conf= new ConfAlerta();
+						conf.setChatId(chatId);
+						conf.setRatioNivel1(Double.valueOf(95));
+						conf.setRatioNivel2(confRatio2);
+						
+						confAlertas.put(chatId, conf);
+						
+					} else {
+						conf.setRatioNivel2(confRatio2);
+						confAlertas.put(chatId, conf);
+					}
+					
+					StringBuilder mens1= new StringBuilder();
+					mens1.append("Nivel 1 seteado a -><b> "+ conf.getRatioNivel1() +"%</b>\n");
+					mens1.append("Nivel 2 seteado a -><b> "+ conf.getRatioNivel2() +"%</b>\n");
+					
+					String enviar=mens1.toString();
+					sendMessage(chatId, enviar);
+										
+					estados.put(chatId, Estados.INICIAL);
+					
+					ConfAlertasCSVUtils.escribirConfAlertasEnCsv(confAlertas);
+					
+				} catch (Exception e) {
+					sendMessage(chatId,"formato de ratio incorrecto");
+					estados.put(chatId, Estados.INICIAL);
+				}
+				
+				
+			} else {
+				sendMessage(chatId,"comando desconocido");
+				estados.put(chatId, Estados.INICIAL);
+			}
+
+		}
+        
+        
+        
+        
+        
+        
+        
 
         if (update.hasCallbackQuery()) {
             String callbackData = update.getCallbackQuery().getData();
@@ -176,6 +340,7 @@ public class MyAmazingBot implements LongPollingSingleThreadUpdateConsumer  {
         SendMessage message = SendMessage.builder()
                 .chatId(chatId.toString())
                 .text(text)
+                .parseMode("HTML") // 👈 Muy importante
                 .build();
 
         try {
