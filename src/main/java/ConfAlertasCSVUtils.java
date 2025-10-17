@@ -46,7 +46,7 @@ public class ConfAlertasCSVUtils {
 
 		if (!exists) {
 			
-			String newLine = alerta.getChatId() + "," + alerta.getRatioNivel1() + "," + alerta.getRatioNivel2();
+			String newLine = alerta.getChatId() + "," + alerta.getRatioNivel1() + "," + alerta.getRatioNivel2()+ "," + alerta.getCuotaMinima();
 			// Añadimos al final
 			Files.write(path, (newLine + System.lineSeparator()).getBytes(StandardCharsets.UTF_8),
 					StandardOpenOption.APPEND);
@@ -70,11 +70,12 @@ public class ConfAlertasCSVUtils {
 				if (line.trim().isEmpty())
 					continue;
 				String[] parts = line.split(",", -1);
-				if (parts.length >= 3) {
+				if (parts.length >= 4) {
 					ConfAlerta alerta = new ConfAlerta();
 					alerta.setChatId(Long.parseLong(parts[0]));
 					alerta.setRatioNivel1(Double.parseDouble(parts[1]));
 					alerta.setRatioNivel2(Double.parseDouble(parts[2]));
+					alerta.setCuotaMinima(Double.parseDouble(parts[3]));
 					lista.put(alerta.getChatId(), alerta);
 				}
 			}
@@ -98,7 +99,8 @@ public class ConfAlertasCSVUtils {
 	            writer.write(
 	                    valor.getChatId() + "," +
 	                    valor.getRatioNivel1() + "," +
-	                    valor.getRatioNivel2());
+	                    valor.getRatioNivel2() + "," +
+	                    valor.getCuotaMinima());
 	            writer.newLine();
 	        }
 

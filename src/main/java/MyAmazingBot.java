@@ -52,6 +52,7 @@ public class MyAmazingBot implements LongPollingSingleThreadUpdateConsumer  {
 	    public static final String INICIAL = "INICIAL";
 	    public static final String CONFALERTA1 = "CONFALERTA1";
 	    public static final String CONFALERTA2 = "CONFALERTA2";
+	    public static final String CONFALERTA3 = "CONFALERTA3";
 	    
 	}
 	
@@ -102,9 +103,10 @@ public class MyAmazingBot implements LongPollingSingleThreadUpdateConsumer  {
 					}
 					
 					StringBuilder mens= new StringBuilder();
-					mens.append("ratios configurados para el usuario \n");
+					mens.append("configuraciones para el usuario \n");
 					mens.append("<b>Nivel 1</b> (cuotas hasta 5)-><b>" + conf.getRatioNivel1() + "% </b>\n");
 					mens.append("<b>Nivel 2</b> (cuotas a partir de 5)-><b>" + conf.getRatioNivel2() + "%</b>\n");
+					mens.append("<b>Cuota Mínima</b>-><b>" + conf.getCuotaMinima() + "%</b>\n");
 					
 					String enviar=mens.toString();
 					
@@ -137,6 +139,7 @@ public class MyAmazingBot implements LongPollingSingleThreadUpdateConsumer  {
 						conf.setChatId(chatId);
 						conf.setRatioNivel1(confRatio1);
 						conf.setRatioNivel2(Double.valueOf(92));
+						conf.setCuotaMinima(Double.valueOf(2.5));
 						
 						confAlertas.put(chatId, conf);
 						
@@ -179,6 +182,7 @@ public class MyAmazingBot implements LongPollingSingleThreadUpdateConsumer  {
 						conf.setChatId(chatId);
 						conf.setRatioNivel1(Double.valueOf(95));
 						conf.setRatioNivel2(confRatio2);
+						conf.setCuotaMinima(Double.valueOf(2.5));
 						
 						confAlertas.put(chatId, conf);
 						
@@ -189,7 +193,55 @@ public class MyAmazingBot implements LongPollingSingleThreadUpdateConsumer  {
 					
 					StringBuilder mens1= new StringBuilder();
 					mens1.append("Nivel 1 seteado a -><b> "+ conf.getRatioNivel1() +"%</b>\n");
+					mens1.append("Nivel 2 seteado a -><b> "+ conf.getRatioNivel2() +"%</b>\n\n");
+					
+					mens1.append("Escribe <b>cuota mínima</b> para recibir la alerta\n");
+					mens1.append("escribe 0 para volver a valor defecto\n");
+					mens1.append("(decimales con punto y sin el signo de %)");
+					
+					String enviar=mens1.toString();
+					sendMessage(chatId, enviar);
+										
+					estados.put(chatId, Estados.CONFALERTA3);
+					
+					ConfAlertasCSVUtils.escribirConfAlertasEnCsv(confAlertas);
+					
+				} catch (Exception e) {
+					sendMessage(chatId,"formato de ratio incorrecto");
+					estados.put(chatId, Estados.INICIAL);
+				}
+				
+				
+			} else if (estadoUsuario.equals(Estados.CONFALERTA3)) {
+				
+				try {
+					Double confCuotaMinima=Double.valueOf(text);
+					
+					if(confCuotaMinima==0) {
+						confCuotaMinima=2.5;
+					} else if(confCuotaMinima<1.85) {
+						confCuotaMinima=1.85;
+					}
+					ConfAlerta conf=confAlertas.get(chatId);
+					if(conf==null) {
+						conf= new ConfAlerta();
+						conf.setChatId(chatId);
+						conf.setRatioNivel1(Double.valueOf(95));
+						conf.setRatioNivel2(Double.valueOf(92));
+						conf.setCuotaMinima(confCuotaMinima);
+						
+						confAlertas.put(chatId, conf);
+						
+					} else {
+						conf.setCuotaMinima(confCuotaMinima);
+						confAlertas.put(chatId, conf);
+					}
+					
+					StringBuilder mens1= new StringBuilder();
+					mens1.append("Nivel 1 seteado a -><b> "+ conf.getRatioNivel1() +"%</b>\n");
 					mens1.append("Nivel 2 seteado a -><b> "+ conf.getRatioNivel2() +"%</b>\n");
+					mens1.append("Cuota Mínima seteada a -><b> "+ conf.getCuotaMinima() +"</b>\n\n");
+					mens1.append("Fin de la configuración");
 					
 					String enviar=mens1.toString();
 					sendMessage(chatId, enviar);

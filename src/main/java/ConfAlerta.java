@@ -5,7 +5,7 @@ public class ConfAlerta {
 	private Long chatId;
 	private Double ratioNivel1;  //cuotas hasta 5
 	private Double ratioNivel2;  //cuotas desde 5
-	
+	private Double cuotaMinima;
 	
 	
 	public Long getChatId() {
@@ -25,6 +25,12 @@ public class ConfAlerta {
 	}
 	public void setRatioNivel2(Double ratioNivel2) {
 		this.ratioNivel2 = ratioNivel2;
+	}
+	public Double getCuotaMinima() {
+		return cuotaMinima;
+	}
+	public void setCuotaMinima(Double cuotaMinima) {
+		this.cuotaMinima = cuotaMinima;
 	}
 
 	
