@@ -19,12 +19,16 @@ import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKe
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardRow;
 import org.telegram.telegrambots.meta.generics.TelegramClient;
 
-public class MyAmazingBot implements LongPollingSingleThreadUpdateConsumer  {
+import dto.AlertaExclusion;
+import dto.ConfAlerta;
+import dto.User;
+import utils.AlertaExclusionCSVUtils;
+import utils.ConfAlertasCSVUtils;
+
+public class BotConfiguracion implements LongPollingSingleThreadUpdateConsumer  {
 
 	
-	private TelegramClient telegramClient = new OkHttpTelegramClient("7380837153:AAHMQFIyGwO-FSwq9DvpQjnH4JroSy9tOSs");  //PRO
-	//private TelegramClient telegramClient = new OkHttpTelegramClient("7029538813:AAH2I40DoMKEWLpVph3qrWUJ3vilGTEQABg"); //PRE
-	
+	private TelegramClient telegramClient = new OkHttpTelegramClient(Main.botToken);  //PRO
 	
 	private static final String CSV_USERS = "C:"+ File.separator +"BOT" + File.separator +"CONF"+File.separator+ "users.csv";
 	private static final String CSV_EXCLUDE_ALERTS = "C:"+ File.separator +"BOT" + File.separator +"CONF"+File.separator+ "alertasExclusiones.csv";
@@ -34,7 +38,7 @@ public class MyAmazingBot implements LongPollingSingleThreadUpdateConsumer  {
 	private static HashMap<Long, ConfAlerta> confAlertas;
 	private static HashMap<Long, String> estados;
 	
-	public MyAmazingBot() throws IOException {
+	public BotConfiguracion() throws IOException {
 	
 		confAlertas= new HashMap<>();
 		
@@ -264,11 +268,6 @@ public class MyAmazingBot implements LongPollingSingleThreadUpdateConsumer  {
 		}
         
         
-        
-        
-        
-        
-        
 
         if (update.hasCallbackQuery()) {
             String callbackData = update.getCallbackQuery().getData();
@@ -288,7 +287,7 @@ public class MyAmazingBot implements LongPollingSingleThreadUpdateConsumer  {
             
 
             try {
-				AlertaExclusionCSVUtils.addIfNotExists(alerta, CSV_EXCLUDE_ALERTS);
+				AlertaExclusionCSVUtils.addIfNotExists(alerta);
 			} catch (IOException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
