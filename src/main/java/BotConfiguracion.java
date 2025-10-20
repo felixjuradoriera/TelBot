@@ -21,14 +21,18 @@ import org.telegram.telegrambots.meta.generics.TelegramClient;
 
 import dto.AlertaExclusion;
 import dto.ConfAlerta;
+import dto.Odd;
 import dto.User;
+import service.NinjaService;
+import telegram.TelegramSender;
 import utils.AlertaExclusionCSVUtils;
+import utils.AlertasFactory;
 import utils.ConfAlertasCSVUtils;
 
 public class BotConfiguracion implements LongPollingSingleThreadUpdateConsumer  {
 
 	
-	private TelegramClient telegramClient = new OkHttpTelegramClient(Main.botToken);  //PRO
+	private TelegramClient telegramClient = new OkHttpTelegramClient(Main.botToken); 
 	
 	private static final String CSV_USERS = "C:"+ File.separator +"BOT" + File.separator +"CONF"+File.separator+ "users.csv";
 	private static final String CSV_EXCLUDE_ALERTS = "C:"+ File.separator +"BOT" + File.separator +"CONF"+File.separator+ "alertasExclusiones.csv";
@@ -273,27 +277,68 @@ public class BotConfiguracion implements LongPollingSingleThreadUpdateConsumer  
             String callbackData = update.getCallbackQuery().getData();
             System.out.println(callbackData);
             Long chatId = update.getCallbackQuery().getMessage().getChatId();
-            
             String[] parts = callbackData.split("\\|");
-            String marketID = parts[0];
-            String sFechaPartido = parts[1];
-            String evento = parts[2];
             
-            AlertaExclusion alerta= new AlertaExclusion();
-            alerta.setChatId(chatId);
-            alerta.setMarket_id(marketID);
-            alerta.setsFechaPartido(sFechaPartido);
-            alerta.setEvento(evento);
+            String opcion=parts[0];
             
+                       
+            if("excluir".equals(opcion)) {
+            	 String marketID = parts[1];
+                 String sFechaPartido = parts[2];
+                 String evento = parts[3];
+                 
+                 AlertaExclusion alerta= new AlertaExclusion();
+                 alerta.setChatId(chatId);
+                 alerta.setMarket_id(marketID);
+                 alerta.setsFechaPartido(sFechaPartido);
+                 alerta.setEvento(evento);
+                 
 
-            try {
-				AlertaExclusionCSVUtils.addIfNotExists(alerta);
-			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
+                 try {
+     				AlertaExclusionCSVUtils.addIfNotExists(alerta);
+     			} catch (IOException e) {
+     				// TODO Auto-generated catch block
+     				e.printStackTrace();
+     			}
+                 
+                 sendMessage(chatId, "Has Excluido este evento de tus alertas");
+            }
             
-            sendMessage(chatId, "Has Excluido este evento de tus alertas");
+            if("way".equals(opcion)) {
+            	String market_id=parts[1];  
+            	String evento = parts[2];               
+                
+            	Odd odd=new Odd();
+                odd.setEvent(evento);
+                odd.setMarket_id(market_id);
+               
+                
+                try {
+					odd=NinjaService.rellenaCuotasTodas(odd);
+					Odd o=odd.getMejoresHome().get(0);
+					
+					odd.setCompetition(o.getCompetition());
+					odd.setCountry(o.getCountry());
+					odd.setsFechaPartido(o.getsFechaPartido());
+					
+					
+					
+					
+					StringBuilder mensaje = new StringBuilder();
+					mensaje = AlertasFactory.createAlerta2WAY(odd);
+					System.out.println("Alerta 2WAY enviada");
+					// 🔹 Enviar a Telegram
+					TelegramSender.alertasEnviadas++;
+					TelegramSender.sendTelegramMessageAlerta2WAY(mensaje.toString(), odd, chatId.toString());	
+				} catch (Exception e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+              
+                
+                
+           }
+           
          
         
         }
