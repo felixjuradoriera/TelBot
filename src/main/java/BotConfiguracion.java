@@ -8,6 +8,7 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 
 import org.telegram.telegrambots.client.okhttp.OkHttpTelegramClient;
@@ -21,6 +22,8 @@ import org.telegram.telegrambots.meta.generics.TelegramClient;
 
 import dto.AlertaExclusion;
 import dto.ConfAlerta;
+import dto.Event;
+import dto.MenuOpcion;
 import dto.Odd;
 import dto.User;
 import service.NinjaService;
@@ -28,6 +31,7 @@ import telegram.TelegramSender;
 import utils.AlertaExclusionCSVUtils;
 import utils.AlertasFactory;
 import utils.ConfAlertasCSVUtils;
+import utils.OddUtils;
 
 public class BotConfiguracion implements LongPollingSingleThreadUpdateConsumer  {
 
@@ -61,6 +65,8 @@ public class BotConfiguracion implements LongPollingSingleThreadUpdateConsumer  
 	    public static final String CONFALERTA1 = "CONFALERTA1";
 	    public static final String CONFALERTA2 = "CONFALERTA2";
 	    public static final String CONFALERTA3 = "CONFALERTA3";
+	    public static final String BUSCA_ALERTA1 = "BUSCALERTAS1";
+	    public static final String BUSCA_ALERTA2 = "BUSCALERTAS2";
 	    
 	}
 	
@@ -69,15 +75,15 @@ public class BotConfiguracion implements LongPollingSingleThreadUpdateConsumer  
         if (update.hasMessage() && update.getMessage().hasText()) {
             String text = update.getMessage().getText();
             Long chatId = update.getMessage().getChatId();
-                        
+            
+            
+			String estadoUsuario = estados.get(chatId);
+			if (estadoUsuario == null) {
+				estadoUsuario = Estados.INICIAL;
+				estados.put(chatId, estadoUsuario);
+			}
 
-            String estadoUsuario=estados.get(chatId);
-            if(estadoUsuario==null) {
-            	estadoUsuario=Estados.INICIAL;
-            	estados.put(chatId, estadoUsuario);
-            }
-            
-            
+			            
 			if (estadoUsuario.equals(Estados.INICIAL)) {
 				if ("/activar_alertas".equals(text)) {
 
@@ -129,6 +135,16 @@ public class BotConfiguracion implements LongPollingSingleThreadUpdateConsumer  
 					sendMessage(chatId, mens1.toString());
 
 					estados.put(chatId, Estados.CONFALERTA1);
+				} else if("/dame_alertas".equals(text)) { 
+				
+					StringBuilder mens= new StringBuilder();
+					mens.append("Introduce palabra o palabras de búsqueda que servirán para buscar el evento o eventos \n");
+										
+					String enviar=mens.toString();
+					
+					sendMessage(chatId, enviar);
+					
+					estados.put(chatId, Estados.BUSCA_ALERTA1);
 				} else {
 					estados.put(chatId, Estados.INICIAL);
 				}
@@ -264,7 +280,28 @@ public class BotConfiguracion implements LongPollingSingleThreadUpdateConsumer  
 				}
 				
 				
-			} else {
+			} else if (estadoUsuario.equals(Estados.BUSCA_ALERTA1)) { 
+				
+				String cadenaBuscar=text;
+				
+				List<Event> eventos=BotService.buscaEventos(cadenaBuscar);
+				ArrayList<MenuOpcion> opciones= new ArrayList<MenuOpcion>();
+				
+				for (Event e : eventos) {
+					MenuOpcion opcion= new MenuOpcion(e.getValue(), "bus|" + e.getValue());
+					opciones.add(opcion);
+				}
+				
+				StringBuilder mens1= new StringBuilder();
+				mens1.append("Escoge el evento si esta entre los encontrados:\n");
+								
+				TelegramSender.sendTelegramMessageConMenuOpciones(mens1.toString(), String.valueOf(chatId), opciones);
+				
+								
+				estados.put(chatId, Estados.BUSCA_ALERTA2);
+			
+			}
+			else {
 				sendMessage(chatId,"comando desconocido");
 				estados.put(chatId, Estados.INICIAL);
 			}
@@ -314,7 +351,7 @@ public class BotConfiguracion implements LongPollingSingleThreadUpdateConsumer  
                
                 
                 try {
-					odd=NinjaService.rellenaCuotasTodas(odd);
+					odd=NinjaService.rellenaCuotasTodas(odd, null, market_id);
 					Odd o=odd.getMejoresHome().get(0);
 					
 					odd.setCompetition(o.getCompetition());
@@ -330,6 +367,60 @@ public class BotConfiguracion implements LongPollingSingleThreadUpdateConsumer  
 					// 🔹 Enviar a Telegram
 					TelegramSender.alertasEnviadas++;
 					TelegramSender.sendTelegramMessageAlerta2WAY(mensaje.toString(), odd, chatId.toString());	
+				} catch (Exception e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+              
+                
+                
+           }
+            
+            if("bus".equals(opcion)) {
+            	String evento=parts[1];  
+            	
+            	List<Event> listaEventos=BotService.buscaEventos(evento);
+            	            	
+            	
+                
+            	Odd odd=new Odd();
+                odd.setEvent(evento);
+               // odd.setMarket_id(market_id);
+               
+                
+                try {
+                	
+                	User user=getUser(chatId.toString());
+					odd=NinjaService.rellenaCuotasTodas(odd, listaEventos.get(0).getId(),null);
+					
+					odd=OddUtils.pasarHijaMadre(odd, odd.getMejoresHome().get(0));
+					ArrayList<Odd> fusion=new ArrayList<Odd>();
+					fusion.add(odd);
+					odd.setOddsFusion(fusion);
+										
+					StringBuilder mensaje = new StringBuilder();
+					mensaje = AlertasFactory.createAlerta(odd);
+					// 🔹 Enviar a Telegram
+					TelegramSender.sendTelegramMessageAlerta(mensaje.toString(), odd, chatId.toString());
+					
+					
+					odd=OddUtils.pasarHijaMadre(odd, odd.getMejoresAway().get(0));
+					fusion=new ArrayList<Odd>();
+					fusion.add(odd);
+					odd.setOddsFusion(fusion);
+					
+					mensaje = new StringBuilder();
+					mensaje = AlertasFactory.createAlerta(odd);
+					// 🔹 Enviar a Telegram
+					TelegramSender.sendTelegramMessageAlerta(mensaje.toString(), odd, chatId.toString());
+					
+					StringBuilder mensajeDebug = new StringBuilder();
+			        mensajeDebug.append("<b>Petición manual Alerta</b>\n\n");
+				    mensajeDebug.append("Evento: <b>").append(odd.getEvent()).append("</b>\n");
+				    mensajeDebug.append("Usuario: <b>").append(user.getName()).append("</b>\n");
+			       	TelegramSender.sendTelegramMessageDebug(mensajeDebug.toString());
+					
+					
 				} catch (Exception e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
@@ -417,7 +508,16 @@ public class BotConfiguracion implements LongPollingSingleThreadUpdateConsumer  
 	        return users;
 	    }
 	
-	 
+	    public static User getUser(String chatId) {
+	        List<User> users = readUsers();
+
+	       for (User user : users) {
+			if (String.valueOf(user.getChatId()).equals(chatId)){
+				return user;	
+			}
+	       }
+	       return null; 
+	    }
 	
 	private void sendStartMenu(Long chatId, ArrayList<String> opciones ) {
 	    SendMessage message = SendMessage.builder()
