@@ -20,6 +20,7 @@ import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKe
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardRow;
 import org.telegram.telegrambots.meta.generics.TelegramClient;
 
+import conf.Configuracion;
 import dto.AlertaExclusion;
 import dto.ConfAlerta;
 import dto.Event;
@@ -36,7 +37,7 @@ import utils.OddUtils;
 public class BotConfiguracion implements LongPollingSingleThreadUpdateConsumer  {
 
 	
-	private TelegramClient telegramClient = new OkHttpTelegramClient(Main.botToken); 
+	private TelegramClient telegramClient = new OkHttpTelegramClient(Configuracion.BOT_TOKEN); 
 	
 	private static final String CSV_USERS = "C:"+ File.separator +"BOT" + File.separator +"CONF"+File.separator+ "users.csv";
 	private static final String CSV_EXCLUDE_ALERTS = "C:"+ File.separator +"BOT" + File.separator +"CONF"+File.separator+ "alertasExclusiones.csv";
