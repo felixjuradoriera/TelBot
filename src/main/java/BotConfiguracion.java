@@ -322,7 +322,7 @@ public class BotConfiguracion implements LongPollingSingleThreadUpdateConsumer  
             if("excluir".equals(opcion)) {
             	 String marketID = parts[1];
                  String sFechaPartido = parts[2];
-                 String evento = parts[3];
+                 String evento ="TEMP";
                  
                  AlertaExclusion alerta= new AlertaExclusion();
                  alerta.setChatId(chatId);
