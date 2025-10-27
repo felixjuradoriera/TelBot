@@ -33,6 +33,7 @@ import utils.AlertaExclusionCSVUtils;
 import utils.AlertasFactory;
 import utils.ConfAlertasCSVUtils;
 import utils.OddUtils;
+import utils.OddsCSVUtils;
 
 public class BotConfiguracion implements LongPollingSingleThreadUpdateConsumer  {
 
@@ -321,46 +322,52 @@ public class BotConfiguracion implements LongPollingSingleThreadUpdateConsumer  
             
                        
             if("excluir".equals(opcion)) {
-            	 String marketID = parts[1];
-                 String sFechaPartido = parts[2];
-                 String evento ="TEMP";
+            	 String idOdd = parts[1];
+                                
+                 Odd odd=OddsCSVUtils.recuperarOdd(idOdd);
                  
-                 AlertaExclusion alerta= new AlertaExclusion();
-                 alerta.setChatId(chatId);
-                 alerta.setMarket_id(marketID);
-                 alerta.setsFechaPartido(sFechaPartido);
-                 alerta.setEvento(evento);
-                 
+                 if(odd!=null) {
+                	 AlertaExclusion alerta= new AlertaExclusion();
+                     alerta.setChatId(chatId);
+                     alerta.setMarket_id(odd.getMarket_id());
+                     alerta.setsFechaPartido(odd.getsFechaPartido());
+                     alerta.setEvento(odd.getEvent());
+                     
 
-                 try {
-     				AlertaExclusionCSVUtils.addIfNotExists(alerta);
-     			} catch (IOException e) {
-     				// TODO Auto-generated catch block
-     				e.printStackTrace();
-     			}
+                     try {
+         				AlertaExclusionCSVUtils.addIfNotExists(alerta);
+         			} catch (IOException e) {
+         				// TODO Auto-generated catch block
+         				e.printStackTrace();
+         			}
+                     
+                     sendMessage(chatId, "Has Excluido este evento de tus alertas");
+                     estados.put(chatId, Estados.INICIAL);
+                 } else {
+                	 sendMessage(chatId, "Evento no encontrado en la lista interna");
+                	 estados.put(chatId, Estados.INICIAL);
+                 }
                  
-                 sendMessage(chatId, "Has Excluido este evento de tus alertas");
+                
             }
             
             if("way".equals(opcion)) {
-            	String market_id=parts[1];  
-            	String evento = parts[2];               
+            	 String idOdd = parts[1];
+            	 
+            	Odd f=OddsCSVUtils.recuperarOdd(idOdd);
                 
             	Odd odd=new Odd();
-                odd.setEvent(evento);
-                odd.setMarket_id(market_id);
+                odd.setEvent(f.getEvent());
+                odd.setMarket_id(f.getMarket_id());
                
                 
                 try {
-					odd=NinjaService.rellenaCuotasTodas(odd, null, market_id);
+					odd=NinjaService.rellenaCuotasTodas(odd, null, f.getMarket_id());
 					Odd o=odd.getMejoresHome().get(0);
 					
 					odd.setCompetition(o.getCompetition());
 					odd.setCountry(o.getCountry());
 					odd.setsFechaPartido(o.getsFechaPartido());
-					
-					
-					
 					
 					StringBuilder mensaje = new StringBuilder();
 					mensaje = AlertasFactory.createAlerta2WAY(odd);
