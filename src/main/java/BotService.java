@@ -587,9 +587,9 @@ public class BotService {
 			StringBuilder mens= new StringBuilder();
     		mens.append( entrada.getEvent() + " \n");
     		mens.append("<b>"+ AlertasFactory.getNombreBookie(entrada.getBookie()) + ":</b> \n");
-    		mens.append("<b>"+ backStakeRedondeado + "€</b> back a cuota <b>" +  entrada.getBackOdd()  +"</b> \n");
-    		mens.append("<b>"+ "Exchange" + ":</b> \n");
-    		mens.append("<b>"+ layStakeRedondeado + "€</b> lay a cuota <b>" +  entrada.getLayOdd()  +"</b> \n");
+    		mens.append("<b>"+ backStakeRedondeado + "€</b> BACK a cuota <b>" +  entrada.getBackOdd()  +"</b> \n");
+    		mens.append("<b>"+ "Exchange" + ":</b> \n\n");
+    		mens.append("👉Apuesta->").append("<b>"+ layStakeRedondeado + "€</b> LAY a cuota <b>" +  entrada.getLayOdd()  +"</b> \n");
     		mens.append("\n");
     		mens.append("🔴Pérdida calificante <b>"+ perdidaCalificanteRedondeada + "€</b> \n");
     		mens.append("\n");
@@ -597,9 +597,7 @@ public class BotService {
     		    		
     		String enviar=mens.toString();
     		
-    		
-    		
-    		
+    		 		
     		MenuOpcion si=new MenuOpcion("Sí", "ent2|si");
     		MenuOpcion no=new MenuOpcion("No", "ent2|no");
     		ArrayList<MenuOpcion> sino=new ArrayList<MenuOpcion>();
