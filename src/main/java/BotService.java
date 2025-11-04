@@ -426,6 +426,7 @@ public class BotService {
     		BotConfiguracion.entradasTemp.put(chatId, odd);            		            		
     	
     		String mensaje="<b>" + AlertasFactory.getNombreBookie(odd.getBookie()) + "</b>\n";
+    		mensaje+="<b>"+odd.getSelection()+"</b> Rat:<b>"+odd.getRating()+"%</b>\n";
     		mensaje+="Back:"+ odd.getBackOdd() +" | lay:" + odd.getLayOdd() + "\n";
     		mensaje+="¿Las cuotas en la alerta son correctas?";
     		MenuOpcion si=new MenuOpcion("Sí", "ent1|si");
@@ -587,6 +588,7 @@ public class BotService {
 			StringBuilder mens= new StringBuilder();
     		mens.append( entrada.getEvent() + " \n");
     		mens.append("<b>"+ AlertasFactory.getNombreBookie(entrada.getBookie()) + ":</b> \n");
+    		mens.append("Ap:<b>").append(entrada.getSelection()).append("</b> Rat:<b>").append(entrada.getRating()).append("%</b>\n");
     		mens.append("<b>"+ backStakeRedondeado + "€</b> BACK a cuota <b>" +  entrada.getBackOdd()  +"</b> \n");
     		mens.append("<b>"+ "Exchange" + ":</b> \n\n");
     		mens.append("👉Apuesta->").append("<b>"+ layStakeRedondeado + "€</b> LAY a cuota <b>" +  entrada.getLayOdd()  +"</b> \n");
@@ -600,9 +602,11 @@ public class BotService {
     		 		
     		MenuOpcion si=new MenuOpcion("Sí", "ent2|si");
     		MenuOpcion no=new MenuOpcion("No", "ent2|no");
+    		MenuOpcion rat=new MenuOpcion("Modificar stake", "ent2|mod");
     		ArrayList<MenuOpcion> sino=new ArrayList<MenuOpcion>();
     		sino.add(no);
     		sino.add(si);
+    		sino.add(rat);
     		
     		TelegramSender.sendTelegramMessageConMenuOpciones(enviar, chatId.toString(), sino);
     		
@@ -650,7 +654,13 @@ public class BotService {
     		BotConfiguracion.estados.put(chatId, Estados.INICIAL);
     		
     		
-    	} 
+    	} else if ("mod".equals(respuesta)) {
+    		
+    		String[] part = { "ent1", "si" };
+    		entrar1(update, chatId, text, part);
+    				
+    		
+    	}
 		
 	}
 	
