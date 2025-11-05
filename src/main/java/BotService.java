@@ -533,6 +533,15 @@ public class BotService {
 			Odd odd=BotConfiguracion.entradasTemp.get(chatId);
 			odd.setLayOdd(String.valueOf(layOddOddRed));
 			
+			
+			Double layStake=100*Double.valueOf(odd.getBackOdd())/(layOddOddRed-0.02);
+			Double profit=layStake*(1-0.02)-100;
+			Double nuevoRating=((100+profit)/100)*100;
+			Double nuevoRatingRedondeado = Math.round(nuevoRating * 100.0) / 100.0;
+			
+			odd.setRatingOriginal(String.valueOf(nuevoRatingRedondeado));
+			odd.setRating(String.valueOf(nuevoRatingRedondeado));
+			
 			BotConfiguracion.entradasTemp.put(chatId,odd);
 			
 			entrar0(update, chatId, text, null, true);
