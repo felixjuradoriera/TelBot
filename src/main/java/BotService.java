@@ -321,6 +321,34 @@ public class BotService {
 		
 	}
 	
+	public static void excluirEvento(Long chatId,Odd odd) {
+		
+		 
+        
+        if(odd!=null) {
+       	 AlertaExclusion alerta= new AlertaExclusion();
+            alerta.setChatId(chatId);
+            alerta.setMarket_id(odd.getMarket_id());
+            alerta.setsFechaPartido(odd.getsFechaPartido());
+            alerta.setEvento(odd.getEvent());
+            
+
+            try {
+				AlertaExclusionCSVUtils.addIfNotExists(alerta);
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+            
+           
+        } else {
+       	 sendMessage(chatId, "Evento no encontrado en la lista interna");
+       	 BotConfiguracion.estados.put(chatId, Estados.INICIAL);
+        }
+		
+		
+	}
+	
 	
 	public static void enviar2Way(Update update, Long chatId, String text, String[] parts) {
 		
@@ -636,7 +664,9 @@ public class BotService {
     	if("si".equals(respuesta)) {
     		
     		try {
-    			BotConfiguracion.entradas.get(chatId).add(BotConfiguracion.entradasTemp.get(chatId));
+    			Odd odd=BotConfiguracion.entradasTemp.get(chatId);
+    			
+    			BotConfiguracion.entradas.get(chatId).add(odd);
         		OddsCSVUtils.escribirCSV(Configuracion.CSV_FILE_ENTRADAS+chatId+"_entradas.csv", BotConfiguracion.entradas.get(chatId));
         		
         		StringBuilder mens= new StringBuilder();
@@ -644,6 +674,8 @@ public class BotService {
         		    		    		
         		String enviar=mens.toString();
         		sendMessage(chatId, enviar);
+        		
+        		excluirEvento(chatId,odd);
         		   		
         		BotConfiguracion.estados.put(chatId, Estados.INICIAL);
 			} catch (Exception e) {
