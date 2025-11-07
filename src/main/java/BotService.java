@@ -393,6 +393,9 @@ public class BotService {
         
     	Odd odd=new Odd();
         odd.setEvent(evento);
+        odd.setIdOdd(OddUtils.dameIdOdd());	
+        LocalDateTime ahora=LocalDateTime.now();
+		odd.setFechaAlerta(ahora);
        // odd.setMarket_id(market_id);
        
         
@@ -427,7 +430,10 @@ public class BotService {
 		    mensajeDebug.append("Evento: <b>").append(odd.getEvent()).append("</b>\n");
 		    mensajeDebug.append("Usuario: <b>").append(user.getName()).append("</b>\n");
 	       	TelegramSender.sendTelegramMessageDebug(mensajeDebug.toString());
-			
+	       	
+	       	ArrayList<Odd> oddsHist=OddsCSVUtils.leerCSV(Configuracion.CSV_FILE_HIST);
+	       	oddsHist.add(odd);
+	       	OddsCSVUtils.escribirCSV(Configuracion.CSV_FILE_HIST, oddsHist);
 			
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
@@ -773,6 +779,13 @@ public class BotService {
 				
 			BotConfiguracion.entradas.put(chatId, entradasUsuarioFiltradas);
 			grabarDatosUsuario(chatId);
+			
+			DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
+			entradasUsuarioFiltradas.sort((e1, e2) -> {
+			    LocalDateTime f1 = LocalDateTime.parse(e1.getsFechaPartido(), formatter);
+			    LocalDateTime f2 = LocalDateTime.parse(e2.getsFechaPartido(), formatter);
+			    return f2.compareTo(f1); // descendente
+			});
 			
 			return entradasUsuarioFiltradas;
 			
