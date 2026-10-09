@@ -65,8 +65,11 @@ public class BotService {
 		user.setName(update.getMessage().getChat().getUserName());
 
 		UsersUtils.saveUserIfNotExists(user);
-		BotConfiguracion.entradas.put(chatId, new ArrayList<Odd>());
-		BotConfiguracion.entradasTemp.put(chatId, new Odd());
+		// no machacar las entradas existentes si el usuario ya estaba activo
+		if (!BotConfiguracion.entradas.containsKey(chatId)) {
+			recargarEntradasUsuario(update, chatId);
+		}
+		BotConfiguracion.entradasTemp.putIfAbsent(chatId, new Odd());
 
 		sendMessage(chatId, "Alertas 2UP activadas para el usuario");
 
