@@ -13,7 +13,6 @@ public class Estados {
 	    public static final String ENTRAR_11 = "ENTRAR11";
 	    public static final String ENTRAR_12 = "ENTRAR12";
 	    public static final String ENTRAR_2 = "ENTRAR2";
-	    public static final String ENTRAR_3 = "ENTRAR3";
 	    
 	    
 	    public static final String EARLY2 = "EARLY2";

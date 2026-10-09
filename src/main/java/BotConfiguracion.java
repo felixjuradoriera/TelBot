@@ -1,38 +1,16 @@
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileReader;
-import java.io.FileWriter;
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 
-import org.telegram.telegrambots.client.okhttp.OkHttpTelegramClient;
 import org.telegram.telegrambots.longpolling.util.LongPollingSingleThreadUpdateConsumer;
-import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Update;
-import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
-import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton;
-import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardRow;
-import org.telegram.telegrambots.meta.generics.TelegramClient;
 
 import conf.Configuracion;
-import dto.AlertaExclusion;
 import dto.ConfAlerta;
-import dto.Event;
-import dto.MenuOpcion;
 import dto.Odd;
 import dto.User;
-import service.NinjaService;
-import telegram.TelegramSender;
-import utils.AlertaExclusionCSVUtils;
-import utils.AlertasFactory;
 import utils.ConfAlertasCSVUtils;
-import utils.OddUtils;
 import utils.OddsCSVUtils;
 import utils.UsersUtils;
 
@@ -41,8 +19,6 @@ public class BotConfiguracion implements LongPollingSingleThreadUpdateConsumer  
 	
 	 
 	
-	private static final String CSV_USERS = Configuracion.BASE_DIR + File.separator + "users.csv";
-	private static final String CSV_EXCLUDE_ALERTS = Configuracion.BASE_DIR + File.separator + "alertasExclusiones.csv";
 	
 	
 	 
@@ -234,24 +210,6 @@ public class BotConfiguracion implements LongPollingSingleThreadUpdateConsumer  
         }
     }
 	
-    
-    private InlineKeyboardMarkup buildKeyboard(List<String> opciones) {
-        List<InlineKeyboardRow> rows = new ArrayList<>();
-
-        for (String opcion : opciones) {
-            InlineKeyboardButton button = InlineKeyboardButton.builder()
-                    .text(opcion)
-                    .callbackData(opcion) // aquí puedes usar la misma etiqueta como callback
-                    .build();
-
-            InlineKeyboardRow row = new InlineKeyboardRow(List.of(button));
-            rows.add(row);
-        }
-
-        return InlineKeyboardMarkup.builder()
-                .keyboard(rows)
-                .build();
-    }
 	
 	
 	
