@@ -279,8 +279,14 @@ public class BotService {
 			opciones.add(opcion);
 		}
 		
+		if (opciones.isEmpty()) {
+			sendMessage(chatId, "No se han encontrado eventos para <b>" + cadenaBuscar.replace("<", "&lt;").replace(">", "&gt;") + "</b>. Usa /dame_alertas para buscar de nuevo.");
+			BotConfiguracion.estados.put(chatId, Estados.INICIAL);
+			return;
+		}
+		
 		StringBuilder mens1= new StringBuilder();
-		mens1.append("Escoge el evento si esta entre los encontrados:\n");
+		mens1.append("Escoge el evento si esta entre los encontrados\n(o escribe otra búsqueda):\n");
 						
 		TelegramSender.sendTelegramMessageConMenuOpciones(mens1.toString(), String.valueOf(chatId), opciones);
 		
@@ -389,6 +395,8 @@ public class BotService {
 	public static void buscarEventos(Update update, Long chatId, String text, String[] parts) {
 		
      	String evento=parts[1];  
+     	// ya ha elegido evento: fin de la búsqueda
+     	BotConfiguracion.estados.put(chatId, Estados.INICIAL);
     	
     	List<Event> listaEventos=BotService.buscaEventos(evento);
     	            	

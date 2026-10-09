@@ -150,6 +150,17 @@ public class BotConfiguracion implements LongPollingSingleThreadUpdateConsumer  
 			case Estados.BUSCA_ALERTA1:
 				BotService.BuscaAlerta1(update, chatId, text);
 				break;
+			case Estados.BUSCA_ALERTA2:
+				// esperando que pulse un evento de la lista
+				if (text.startsWith("/")) {
+					// ha escrito un comando: salimos de la búsqueda y lo ejecutamos
+					estados.put(chatId, Estados.INICIAL);
+					consume(update);
+				} else {
+					// ha escrito texto: lo tratamos como una nueva búsqueda
+					BotService.BuscaAlerta1(update, chatId, text);
+				}
+				break;
 			case Estados.ENTRAR_2:
 				BotService.entrar2(update, chatId, text);
 				break;
