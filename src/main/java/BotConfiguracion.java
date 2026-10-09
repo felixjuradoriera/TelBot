@@ -41,8 +41,8 @@ public class BotConfiguracion implements LongPollingSingleThreadUpdateConsumer  
 	
 	 
 	
-	private static final String CSV_USERS = "C:"+ File.separator +"BOT" + File.separator +"CONF"+File.separator+ "users.csv";
-	private static final String CSV_EXCLUDE_ALERTS = "C:"+ File.separator +"BOT" + File.separator +"CONF"+File.separator+ "alertasExclusiones.csv";
+	private static final String CSV_USERS = Configuracion.BASE_DIR + File.separator + "users.csv";
+	private static final String CSV_EXCLUDE_ALERTS = Configuracion.BASE_DIR + File.separator + "alertasExclusiones.csv";
 	
 	
 	 
@@ -143,6 +143,9 @@ public class BotConfiguracion implements LongPollingSingleThreadUpdateConsumer  
 				break;
 			case Estados.CONFALERTA2:
 				BotService.confAlertas2(update, chatId, text);
+				break;
+			case Estados.CONFALERTA3:
+				BotService.confAlertas3(update, chatId, text);
 				break;
 			case Estados.BUSCA_ALERTA1:
 				BotService.BuscaAlerta1(update, chatId, text);
