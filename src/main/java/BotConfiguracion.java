@@ -13,6 +13,7 @@ import dto.User;
 import utils.ConfAlertasCSVUtils;
 import utils.OddsCSVUtils;
 import utils.UsersUtils;
+import telegram.TelegramSender;
 
 public class BotConfiguracion implements LongPollingSingleThreadUpdateConsumer  {
 
@@ -74,6 +75,7 @@ public class BotConfiguracion implements LongPollingSingleThreadUpdateConsumer  
 
 	@Override
     public void consume(Update update) {
+      try {
         if (update.hasMessage() && update.getMessage().hasText()) {
             String text = update.getMessage().getText();
             Long chatId = update.getMessage().getChatId();
@@ -199,6 +201,15 @@ public class BotConfiguracion implements LongPollingSingleThreadUpdateConsumer  
 			}
          
         
+        }
+      } catch (Throwable t) {
+            System.out.println("⚠️ Error procesando update en consume(): " + t);
+            t.printStackTrace();
+            try {
+                TelegramSender.sendTelegramMessageDebug("⚠️ <b>Error procesando un mensaje en TelBot</b>\n" + t.toString());
+            } catch (Exception ex) {
+                ex.printStackTrace();
+            }
         }
     }
 	

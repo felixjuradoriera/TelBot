@@ -11,6 +11,9 @@ public class Main {
 	                    
 	           TelegramBotsLongPollingApplication botsApplication = new TelegramBotsLongPollingApplication();
 	           botsApplication.registerBot(Configuracion.BOT_TOKEN, new BotConfiguracion());
+
+	           // Heartbeat de readiness a HealthChecks (cada 5 min)
+	           HeartbeatTelBot.iniciar();
 	         
 	       } catch (Exception e) {
 	           e.printStackTrace();
