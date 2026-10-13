@@ -6,6 +6,7 @@ public class Main {
 	
 			
 	   public static void main(String[] args) {
+	       LogTimestamp.instalar();
 	       try {
 	                    
 	           TelegramBotsLongPollingApplication botsApplication = new TelegramBotsLongPollingApplication();
